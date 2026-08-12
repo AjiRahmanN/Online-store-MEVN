@@ -2,13 +2,16 @@ const allowedOrigins = require("./allowedOrigins");
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
+    // origin null = mobile app / native / postman
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  optionsSuccessStatus: 200,
   credentials: true,
+  optionsSuccessStatus: 200,
 };
+
 module.exports = corsOptions;

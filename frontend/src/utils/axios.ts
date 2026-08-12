@@ -1,15 +1,13 @@
 import axios from 'axios'
 
+const BASE_URL = import.meta.env.VITE_API_URL
+
 export const axiosInstace = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // Replace with your API base URL
-  withCredentials: true,
-  timeout: 1000,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: BASE_URL,
+  timeout: 10000, // ⬅ 10 DETIK (WAJIB)
 })
 
 export const axiosPrivateInstace = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // Replace with your API base URL
-  withCredentials: true,
-  timeout: 1000,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: BASE_URL,
+  timeout: 10000,
 })

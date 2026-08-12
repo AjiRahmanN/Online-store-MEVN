@@ -18,6 +18,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "axios": "^1.12.2",
     "bootstrap": "^5.3.8",
     "pinia": "^3.0.3",

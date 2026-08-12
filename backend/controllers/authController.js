@@ -17,7 +17,7 @@ async function register(req, res) {
 
   const userExists = await User.findOne({ $or: [{ email }, { username }] });
   if (userExists) {
-    return res.sendStatus(409).json({ message: "Email or Username already exists" });
+    return res.status(409).json({ message: "Email or Username already exists" });
   }
 
   try {
@@ -51,7 +51,7 @@ async function login(req, res) {
     process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: "15m",
-    }
+    },
   );
   const refreshToken = jwt.sign(
     {
@@ -60,7 +60,7 @@ async function login(req, res) {
     process.env.REFRESH_TOKEN_SECRET,
     {
       expiresIn: "7d",
-    }
+    },
   );
   user.refresh_token = refreshToken;
   await user.save();

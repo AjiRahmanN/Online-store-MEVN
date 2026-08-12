@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import { useAuthStore } from './auth' // ✅ panggil authStore
+import { useApiPrivate } from '@/composables/useApi'
+import { useAuthStore } from '@/stores/auth'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -9,15 +9,19 @@ export const useCartStore = defineStore('cart', {
   actions: {
     async fetchCart() {
       const authStore = useAuthStore()
-      //   const userId = "_"
       const userId = authStore.user?.id
       if (!userId) {
         console.warn('User belum login, tidak bisa ambil cart')
         return
       }
 
-      const res = await axios.get(`http://localhost:3500/api/cart/${userId}`)
-      this.items = res.data.cartItem || []
+      try {
+        const { data } = await useApiPrivate().get(`/api/cart/${userId}`)
+        this.items = data.cartItem || []
+      } catch (error: any) {
+        console.error('Error fetching cart:', error)
+        throw error.response?.data?.message || error.message
+      }
     },
 
     async addToCart(productId: string) {
@@ -29,8 +33,13 @@ export const useCartStore = defineStore('cart', {
         return
       }
 
-      await axios.post(`http://localhost:3500/api/cart/${userId}`, { productId })
-      await this.fetchCart() // refresh cart setelah tambah
+      try {
+        await useApiPrivate().post(`/api/cart/${userId}`, { productId })
+        await this.fetchCart() // refresh cart setelah tambah
+      } catch (error: any) {
+        console.error('Error adding to cart:', error)
+        throw error.response?.data?.message || error.message
+      }
     },
 
     async removeFromCart(productId: string) {
@@ -41,8 +50,13 @@ export const useCartStore = defineStore('cart', {
         return
       }
 
-      await axios.delete(`http://localhost:3500/api/cart/${userId}/${productId}`)
-      await this.fetchCart()
+      try {
+        await useApiPrivate().delete(`/api/cart/${userId}/${productId}`)
+        await this.fetchCart()
+      } catch (error: any) {
+        console.error('Error removing from cart:', error)
+        throw error.response?.data?.message || error.message
+      }
     },
   },
 })
