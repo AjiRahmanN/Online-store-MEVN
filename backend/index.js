@@ -29,6 +29,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/api/auth", require("./routes/api/auth"));
 app.use("/api/products", require("./routes/api/product"));
 app.use("/api/cart", require("./routes/api/cart"));
+app.use("/api/orders", require("./routes/api/order"));
+app.use("/api/addresses", require("./routes/api/address"));
 
 // 404 handler
 app.all(/.*/, (req, res) => {

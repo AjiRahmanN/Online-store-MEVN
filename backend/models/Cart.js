@@ -1,8 +1,23 @@
 module.exports = (mongoose) => {
-  const schema = mongoose.Schema({
-    userId: String,
-    cartItem: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
-  });
+  // Kalau model "Cart" sudah pernah didaftarkan (karena file ini di-require
+  // dari beberapa controller), pakai yang sudah ada, jangan daftar ulang.
+  if (mongoose.models.Cart) {
+    return mongoose.models.Cart;
+  }
+
+  const schema = new mongoose.Schema(
+    {
+      userId: { type: String, required: true, index: true },
+      items: [
+        {
+          product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+          qty: { type: Number, default: 1, min: 1 },
+        },
+      ],
+    },
+    { timestamps: true },
+  );
+
   schema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;

@@ -1,4 +1,10 @@
 module.exports = (mongoose) => {
+  // Guard: cegah "OverwriteModelError" kalau file ini di-require lebih dari sekali
+  // (sekarang dipakai productControler.js DAN orderController.js)
+  if (mongoose.models.Product) {
+    return mongoose.models.Product;
+  }
+
   const schema = new mongoose.Schema(
     {
       name: String,
@@ -9,7 +15,7 @@ module.exports = (mongoose) => {
       category: String,
       stock: Number,
     },
-    { timestamps: true }
+    { timestamps: true },
   );
   schema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();

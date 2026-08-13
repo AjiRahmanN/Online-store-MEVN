@@ -11,60 +11,124 @@
     <div v-else>
       <div
         v-for="item in cartItems"
-        :key="item._id"
+        :key="item.product.id"
         class="card mb-3 p-3 shadow-sm cart-item"
       >
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center">
             <!-- Gambar Produk -->
             <img
-              :src="`http://localhost:3500${ item.imageUrl || defaultImage}`"
+              :src="`${apiBaseUrl}${item.product.imageUrl || defaultImage}`"
               alt="Product Image"
               class="rounded me-3 cart-image"
             />
 
             <!-- Nama dan Harga -->
             <div>
-              <h5 class="mb-1">{{ item.name }}</h5>
-              <p class="text-muted mb-0">Rp {{ item.price.toLocaleString() }}</p>
+              <h5 class="mb-1">{{ item.product.name }}</h5>
+              <p class="text-muted mb-0">Rp {{ item.product.price.toLocaleString() }}</p>
+              <small v-if="item.qty > item.product.stock" class="text-danger">
+                Stok tersisa hanya {{ item.product.stock }}
+              </small>
             </div>
           </div>
 
-          <!-- Tombol Hapus -->
-          <button class="btn btn-danger btn-sm" @click="removeItem(item._id)">
-            Hapus
-          </button>
+          <div class="d-flex align-items-center gap-3">
+            <!-- Kontrol Qty -->
+            <div class="input-group input-group-sm" style="width: 120px">
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                :disabled="item.qty <= 1"
+                @click="changeQty(item, item.qty - 1)"
+              >
+                −
+              </button>
+              <input
+                type="text"
+                class="form-control text-center"
+                :value="item.qty"
+                readonly
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                :disabled="item.qty >= item.product.stock"
+                @click="changeQty(item, item.qty + 1)"
+              >
+                +
+              </button>
+            </div>
+
+            <!-- Subtotal -->
+            <div class="text-end" style="min-width: 110px">
+              Rp {{ (item.product.price * item.qty).toLocaleString() }}
+            </div>
+
+            <!-- Tombol Hapus -->
+            <button class="btn btn-danger btn-sm" @click="removeItem(item.product.id)">
+              Hapus
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Total Harga -->
-      <div class="text-end mt-4">
-        <h4>Total: <span class="text-success">Rp {{ totalPrice.toLocaleString() }}</span></h4>
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <h4 class="mb-0">
+          Total: <span class="text-success">Rp {{ totalPrice.toLocaleString() }}</span>
+        </h4>
+        <button
+          class="btn btn-success btn-lg"
+          :disabled="hasStockIssue"
+          @click="goToCheckout"
+        >
+          Checkout
+        </button>
       </div>
+      <p v-if="hasStockIssue" class="text-danger text-end mt-2">
+        Ada barang di cart yang melebihi stok tersedia. Kurangi jumlahnya untuk lanjut checkout.
+      </p>
+      <p v-if="errorMessage" class="text-danger text-end mt-2">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
-import { useCartStore } from '../stores/cart'
+import { useRouter } from 'vue-router'
+import { useCartStore, type CartItem } from '@/stores/cart'
 
 const cartStore = useCartStore()
-const defaultImage = ref('https://via.placeholder.com/100?text=No+Image') // default jika tidak ada gambar
+const router = useRouter()
 
-// ambil cartItems dari store
+const apiBaseUrl = import.meta.env.VITE_API_URL
+const defaultImage = ref('https://via.placeholder.com/100?text=No+Image')
+const errorMessage = ref('')
+
 const cartItems = computed(() => cartStore.items)
-
-// total harga
-const totalPrice = computed(() =>
-  cartItems.value.reduce((acc, item) => acc + (item.price || 0), 0)
+const totalPrice = computed(() => cartStore.totalPrice)
+const hasStockIssue = computed(() =>
+  cartItems.value.some((item) => item.qty > (item.product?.stock ?? 0)),
 )
 
-const removeItem = async (id: string) => {
-  await cartStore.removeFromCart(id)
+const changeQty = async (item: CartItem, newQty: number) => {
+  if (newQty < 1 || newQty > item.product.stock) return
+  try {
+    await cartStore.updateQty(item.product.id, newQty)
+  } catch (err: any) {
+    errorMessage.value = err
+  }
 }
 
-// ambil data saat halaman dimuat
+const removeItem = async (productId: string) => {
+  await cartStore.removeFromCart(productId)
+}
+
+const goToCheckout = () => {
+  router.push({ name: 'checkout' })
+}
+
 onMounted(() => {
   cartStore.fetchCart()
 })

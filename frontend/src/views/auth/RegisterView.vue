@@ -37,7 +37,10 @@
           <input type="checkbox" class="form-check-input" id="exampleCheck1">
           <label class="form-check-label" for="exampleCheck1">Check me out</label>
         </div> -->
-        <button type="submit" class="btn btn-success">Register</button>
+        <button type="submit" class="btn btn-success" :disabled="isSubmitting">
+          <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          Register
+        </button>
       </form>
     </div>
   </div>
@@ -45,15 +48,14 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { useAuthStore, type LoginData, type RegisterData } from '../../stores/auth';
+import { useAuthStore, type RegisterData } from '../../stores/auth';
 import { reactive, ref } from 'vue'
-// import { errorMessages } from 'vue/compiler-sfc';
 
 const authStore = useAuthStore() as any
 const router = useRouter()
 
 
-const registerData= reactive<RegisterData>({
+const registerData = reactive<RegisterData>({
   username: '',
   first_name: '',
   last_name: '',
@@ -63,21 +65,28 @@ const registerData= reactive<RegisterData>({
 })
 
 const errorMessage = ref<string>('')
+const isSubmitting = ref(false)
 
 async function submit() {
-  await authStore.register(registerData)
-  .then((res: unknown) => {
-    router.replace({ name: 'login' })
-    console.log(res)
-  })
-  .catch((error: unknown) => {
-    if (error && typeof error === 'object' && 'response' in error) {
-    throw (error as any)?.response?.data?.message || 'Unknown error'
-  }
-  throw 'Unknown error'
-  })
-}
+  errorMessage.value = ''
 
+  if (registerData.password !== registerData.password_confirm) {
+    errorMessage.value = 'Password dan konfirmasi password tidak sama'
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    await authStore.register(registerData)
+    router.replace({ name: 'login' })
+  } catch (error: unknown) {
+    // authStore.register() sudah melempar STRING pesan error (bukan objek axios),
+    // jadi cukup ditampilkan langsung -- tidak perlu cek 'response' in error lagi.
+    errorMessage.value = typeof error === 'string' ? error : 'Terjadi kesalahan, coba lagi.'
+  } finally {
+    isSubmitting.value = false
+  }
+}
 </script>
 
 <style scoped>

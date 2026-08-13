@@ -13,18 +13,12 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/auth/LoginView.vue'),
       meta: { requireGuest: true },
     },
     {
       path: '/register',
       name: 'register',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/auth/RegisterView.vue'),
       meta: { requireGuest: true },
     },
@@ -36,63 +30,48 @@ const router = createRouter({
     {
       path: '/user',
       name: 'user',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/auth/UserView.vue'),
       meta: { requireAuth: true },
     },
     {
       path: '/cart',
       name: 'cart',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/CartView.vue'),
+      meta: { requireAuth: true },
+    },
+    {
+      path: '/checkout',
+      name: 'checkout',
+      component: () => import('../views/CheckoutView.vue'),
+      meta: { requireAuth: true },
+    },
+    {
+      path: '/orders',
+      name: 'order-history',
+      component: () => import('../views/OrderHistoryView.vue'),
+      meta: { requireAuth: true },
+    },
+    {
+      path: '/addresses',
+      name: 'addresses',
+      component: () => import('../views/AddressListView.vue'),
       meta: { requireAuth: true },
     },
     {
       path: '/admin/products',
       name: 'adminproducts',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/admin/ProductData.vue'),
       meta: { requireAuth: true, requiresAdmin: true },
     },
-    // {
-    //   path: '/adminusers',
-    //   name: 'adminusers',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/auth/UserView.vue'),
-    //   meta: { requireAuth: true, requiresAdmin: true },
-    // },
     {
       path: '/admin/addproduct',
       name: 'TambahProduct',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/admin/TambahProduct.vue'),
       meta: { requireAuth: true, requiresAdmin: true },
     },
-    // {
-    //   path: '/admin/productDetail/:id',
-    //   name: 'productDetail',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/admin/ProductDetailView.vue'),
-    //   meta: { requireAuth: true, requiresAdmin: true },
-    // },
     {
       path: '/forbidden',
       name: 'forbidden',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/ForbiddenView.vue'),
     },
   ],

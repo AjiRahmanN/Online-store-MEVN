@@ -27,10 +27,10 @@
           </li>
           <!-- Search form -->
           <form class="d-flex me-3" role="search">
-            <input 
-              class="form-control me-2" 
-              type="search" 
-              placeholder="Search" 
+            <input
+              class="form-control me-2"
+              type="search"
+              placeholder="Search"
               aria-label="Search"
             />
             <button class="btn btn-outline-success" type="submit">Search</button>
@@ -50,8 +50,8 @@
               aria-expanded="false"
             >
               🛒
-              <span v-if="cartItems.length" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
-                {{ cartItems.length }}
+              <span v-if="totalItems" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+                {{ totalItems }}
               </span>
             </a>
 
@@ -61,19 +61,19 @@
               </li>
               <li
                 v-for="item in cartItems"
-                :key="item._id"
+                :key="item.product.id"
                 class="dropdown-item d-flex align-items-center"
               >
                 <img
-                  :src="`http://localhost:3500${item.imageUrl}`"
+                  :src="`${apiBaseUrl}${item.product.imageUrl}`"
                   alt=""
                   width="40"
                   height="40"
                   class="me-2 rounded"
                 />
                 <div>
-                  <span class="d-block fw-bold">{{ item.name }}</span>
-                  <small class="text-muted">Rp {{ item.price?.toLocaleString() }}</small>
+                  <span class="d-block fw-bold">{{ item.product.name }} × {{ item.qty }}</span>
+                  <small class="text-muted">Rp {{ item.product.price?.toLocaleString() }}</small>
                 </div>
               </li>
               <li><hr class="dropdown-divider" /></li>
@@ -97,6 +97,12 @@
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
                 <router-link :to="{ name: 'user' }" class="dropdown-item">User Profile</router-link>
+              </li>
+              <li>
+                <router-link :to="{ name: 'order-history' }" class="dropdown-item">Pesanan Saya</router-link>
+              </li>
+              <li>
+                <router-link :to="{ name: 'addresses' }" class="dropdown-item">Alamat Saya</router-link>
               </li>
               <li><a class="dropdown-item" href="#">Settings</a></li>
               <li><hr class="dropdown-divider" /></li>
@@ -129,11 +135,14 @@ const router = useRouter()
 const authStore = useAuthStore() as any
 const cartStore = useCartStore() as any
 
+const apiBaseUrl = import.meta.env.VITE_API_URL
+
 const user = computed(() => authStore.user)
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 
 // ambil cartItems dari store
 const cartItems = computed(() => cartStore.items)
+const totalItems = computed(() => cartStore.totalItems)
 
 
 // ambil data saat halaman dimuat
