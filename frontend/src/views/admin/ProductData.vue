@@ -1,58 +1,75 @@
 <template>
-  <div id="productdata" class="container mt-4">
-    <h3 class="text-center mb-3 text-light">Product List</h3>
+  <div class="mx-auto max-w-6xl px-4 py-10 lg:px-8">
+    <div class="mb-6 flex items-end justify-between gap-3">
+      <div>
+        <p class="race-mono text-xs font-bold tracking-widest text-circuit-red uppercase">// Manajemen Gudang</p>
+        <h1 class="font-display text-3xl font-bold tracking-wide text-steel-white uppercase">Daftar Produk</h1>
+      </div>
+      <router-link :to="{ name: 'TambahProduct' }" class="btn-race px-4 py-2 text-sm">
+        + Tambah Produk
+      </router-link>
+    </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="text-center text-light">Loading products...</div>
+    <div v-if="loading" class="flex justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-track-yellow border-t-transparent"></div>
+    </div>
 
-    <!-- Table -->
-    <table v-else class="table table-dark table-striped align-middle text-center">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Description</th>
-          <th>Image</th>
-          <th>Average Rating</th>
-          <th>Category</th>
-          <th>Stock</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+    <div v-else-if="products.length === 0" class="spec-card px-6 py-16 text-center">
+      <p class="font-display text-lg font-bold uppercase">Gudang Masih Kosong</p>
+      <p class="mt-1 text-sm text-asphalt/60">Belum ada produk terdaftar.</p>
+    </div>
 
-      <tbody v-if="products.length > 0">
-        <tr v-for="(p, index) in products" :key="p.id">
-          <th>{{ index + 1 }}</th>
-          <td>{{ p.name }}</td>
-          <td>Rp {{ p.price.toLocaleString() }}</td>
-          <td>{{ p.description }}</td>
-          <td>
-            <img
-              v-if="p.imageUrl"
-              :src="`http://localhost:3500${p.imageUrl}`"
-              alt="Product"
-              width="80"
-              height="80"
-              class="rounded"
-            />
-            <span v-else>No image</span>
-          </td>
-          <td>{{ p.averageRating ?? '-' }}</td>
-          <td>{{ p.category }}</td>
-          <td>{{ p.stock }}</td>
-          <td>
-            <button class="btn btn-outline-danger btn-sm" @click="handleDelete(p.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-
-      <tbody v-else>
-        <tr>
-          <td colspan="9" class="text-center text-light">Belum ada produk tersedia.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-else class="spec-card overflow-x-auto p-0">
+      <table class="w-full min-w-[800px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-black/10 bg-asphalt-light text-steel-white">
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">#</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Gambar</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Nama</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Harga</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Kategori</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Stok</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Rating</th>
+            <th class="px-4 py-3 font-display text-xs font-bold tracking-widest uppercase">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(p, index) in products" :key="p.id" class="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+            <td class="px-4 py-3 race-mono text-asphalt/50">{{ index + 1 }}</td>
+            <td class="px-4 py-3">
+              <img
+                v-if="p.imageUrl"
+                :src="`${apiBaseUrl}${p.imageUrl}`"
+                alt="Product"
+                class="h-14 w-14 rounded object-cover"
+              />
+              <span v-else class="text-xs text-asphalt/40">Tidak ada</span>
+            </td>
+            <td class="max-w-48 truncate px-4 py-3 font-semibold">{{ p.name }}</td>
+            <td class="race-mono px-4 py-3">Rp {{ p.price.toLocaleString() }}</td>
+            <td class="px-4 py-3">
+              <span v-if="p.category" class="corner-cut bg-asphalt/10 px-2 py-0.5 text-xs font-semibold">
+                {{ p.category }}
+              </span>
+              <span v-else class="text-asphalt/40">—</span>
+            </td>
+            <td class="race-mono px-4 py-3" :class="p.stock > 0 ? '' : 'text-circuit-red'">
+              {{ p.stock ?? 0 }}
+            </td>
+            <td class="px-4 py-3">{{ p.averageRating ?? '-' }}</td>
+            <td class="px-4 py-3">
+              <button
+                type="button"
+                class="corner-cut border-2 border-circuit-red px-3 py-1.5 text-xs font-bold tracking-wide text-circuit-red uppercase hover:bg-circuit-red hover:text-steel-white"
+                @click="handleDelete(p.id)"
+              >
+                Hapus
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -63,6 +80,7 @@ import { useProductStore } from '../../stores/product'
 const productStore = useProductStore() as any
 const loading = ref(true)
 const products = computed(() => productStore.products)
+const apiBaseUrl = import.meta.env.VITE_API_URL
 
 onMounted(async () => {
   try {
@@ -80,17 +98,9 @@ async function handleDelete(id: string) {
 
   try {
     await productStore.deleteProduct(id)
-    alert('Produk berhasil dihapus!')
   } catch (err: any) {
     console.error(err)
     alert('Gagal menghapus produk: ' + err)
   }
 }
 </script>
-
-<style scoped>
-img {
-  object-fit: cover;
-  border: 1px solid #666;
-}
-</style>

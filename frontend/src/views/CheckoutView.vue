@@ -1,97 +1,102 @@
 <template>
-  <div class="container mt-4" style="max-width: 700px">
-    <h2 class="mb-3">Checkout</h2>
+  <div class="mx-auto max-w-3xl px-4 py-10 lg:px-8">
+    <p class="race-mono text-xs font-bold tracking-widest text-circuit-red uppercase">// Race Entry</p>
+    <h1 class="mb-6 font-display text-3xl font-bold tracking-wide text-steel-white uppercase">Checkout</h1>
 
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary"></div>
+    <div v-if="loading" class="flex justify-center py-20">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-track-yellow border-t-transparent"></div>
     </div>
 
-    <div v-else-if="cartItems.length === 0" class="alert alert-warning">
-      Cart kamu kosong, tidak ada yang bisa di-checkout.
-      <router-link :to="{ name: 'home' }">Belanja dulu yuk</router-link>.
+    <div v-else-if="cartItems.length === 0" class="spec-card px-6 py-16 text-center">
+      <p class="font-display text-lg font-bold uppercase">Cart Kosong</p>
+      <p class="mt-1 text-sm text-asphalt/60">Tidak ada yang bisa di-checkout.</p>
+      <router-link :to="{ name: 'home' }" class="btn-race mt-5 inline-flex px-5 py-2.5 text-sm">
+        Belanja Dulu
+      </router-link>
     </div>
 
     <template v-else>
       <!-- Alamat Pengiriman -->
-      <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="mb-0">📍 Alamat Pengiriman</h6>
-            <button type="button" class="btn btn-sm btn-outline-success" @click="openAdd">
-              + Tambah Alamat
-            </button>
-          </div>
-
-          <div v-if="addresses.length === 0" class="text-muted small">
-            Kamu belum punya alamat tersimpan. Tambahkan dulu sebelum checkout.
-          </div>
-
-          <div
-            v-for="addr in addresses"
-            :key="addr.id"
-            class="form-check border rounded p-2 mb-2"
-            :class="{ 'border-success bg-light': selectedAddressId === addr.id }"
-          >
-            <input
-              class="form-check-input"
-              type="radio"
-              :id="`addr-${addr.id}`"
-              :value="addr.id"
-              v-model="selectedAddressId"
-            />
-            <label class="form-check-label w-100" :for="`addr-${addr.id}`" style="cursor: pointer">
-              <span class="badge bg-secondary me-2">{{ addr.label }}</span>
-              <span v-if="addr.isDefault" class="badge bg-success me-2">Utama</span>
-              <div class="fw-bold">{{ addr.recipientName }} — {{ addr.phone }}</div>
-              <div class="text-muted small">
-                {{ addr.fullAddress }}, {{ addr.city }}, {{ addr.province }} {{ addr.postalCode }}
-              </div>
-            </label>
-          </div>
+      <div class="spec-card mb-4 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h6 class="font-display text-sm font-bold tracking-wide uppercase">📍 Alamat Pengiriman</h6>
+          <button type="button" class="btn-race-outline border-asphalt/30 px-3 py-1.5 text-xs text-asphalt hover:bg-asphalt hover:text-steel-white" @click="openAdd">
+            + Tambah Alamat
+          </button>
         </div>
+
+        <div v-if="addresses.length === 0" class="text-sm text-asphalt/60">
+          Kamu belum punya alamat tersimpan. Tambahkan dulu sebelum checkout.
+        </div>
+
+        <label
+          v-for="addr in addresses"
+          :key="addr.id"
+          class="mb-2 flex cursor-pointer items-start gap-3 border p-3 transition-colors last:mb-0"
+          :class="selectedAddressId === addr.id ? 'border-circuit-red bg-circuit-red/5' : 'border-black/10 hover:border-black/25'"
+        >
+          <input type="radio" class="mt-1.5 accent-circuit-red" :value="addr.id" v-model="selectedAddressId" />
+          <div class="min-w-0">
+            <div class="mb-1 flex flex-wrap items-center gap-2">
+              <span class="corner-cut bg-asphalt px-2 py-0.5 text-[10px] font-bold tracking-wide text-steel-white uppercase">
+                {{ addr.label }}
+              </span>
+              <span v-if="addr.isDefault" class="corner-cut bg-track-yellow px-2 py-0.5 text-[10px] font-bold tracking-wide text-asphalt uppercase">
+                Utama
+              </span>
+            </div>
+            <p class="text-sm font-bold">{{ addr.recipientName }} — {{ addr.phone }}</p>
+            <p class="text-sm text-asphalt/60">
+              {{ addr.fullAddress }}, {{ addr.city }}, {{ addr.province }} {{ addr.postalCode }}
+            </p>
+          </div>
+        </label>
       </div>
 
-      <!-- Ringkasan Pesanan -->
-      <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-          <h6 class="mb-3">🛒 Ringkasan Pesanan</h6>
+      <!-- Ringkasan Pesanan: gaya tiket balap dengan tepi sobekan -->
+      <div class="relative border border-black/10 bg-steel-white text-asphalt corner-cut">
+        <div class="p-4">
+          <h6 class="mb-3 font-display text-sm font-bold tracking-wide uppercase">🛒 Ringkasan Pesanan</h6>
           <div
             v-for="item in cartItems"
             :key="item.product.id"
-            class="d-flex justify-content-between align-items-center mb-2"
+            class="mb-2 flex items-center justify-between gap-2"
           >
-            <div class="d-flex align-items-center">
+            <div class="flex min-w-0 items-center gap-2">
               <img
                 :src="`${apiBaseUrl}${item.product.imageUrl}`"
-                width="48"
-                height="48"
-                class="rounded me-2"
-                style="object-fit: cover"
+                class="h-10 w-10 shrink-0 rounded object-cover"
               />
-              <div>
-                <div>{{ item.product.name }}</div>
-                <small class="text-muted">{{ item.qty }} × Rp {{ item.product.price.toLocaleString() }}</small>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold">{{ item.product.name }}</p>
+                <p class="race-mono text-xs text-asphalt/60">
+                  {{ item.qty }} × Rp {{ item.product.price.toLocaleString() }}
+                </p>
               </div>
             </div>
-            <div>Rp {{ (item.product.price * item.qty).toLocaleString() }}</div>
+            <div class="race-mono shrink-0 text-sm font-bold">
+              Rp {{ (item.product.price * item.qty).toLocaleString() }}
+            </div>
           </div>
-          <hr />
-          <div class="d-flex justify-content-between fw-bold fs-5">
-            <span>Total</span>
-            <span>Rp {{ totalPrice.toLocaleString() }}</span>
-          </div>
-          <p class="text-muted small mb-0 mt-1">*Belum termasuk ongkos kirim</p>
+        </div>
+
+        <!-- Garis sobekan tiket -->
+        <div class="relative border-t-2 border-dashed border-asphalt/20">
+          <span class="absolute top-1/2 -left-4 h-6 w-6 -translate-y-1/2 rounded-full bg-asphalt"></span>
+          <span class="absolute top-1/2 -right-4 h-6 w-6 -translate-y-1/2 rounded-full bg-asphalt"></span>
+        </div>
+
+        <div class="flex items-center justify-between p-4">
+          <span class="font-display font-bold uppercase">Total</span>
+          <span class="race-mono text-xl font-bold text-circuit-red">Rp {{ totalPrice.toLocaleString() }}</span>
         </div>
       </div>
+      <p class="mt-1 text-xs text-chrome/70">*Belum termasuk ongkos kirim</p>
 
-      <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+      <p v-if="errorMessage" class="mt-3 text-sm text-circuit-red">{{ errorMessage }}</p>
 
-      <button
-        class="btn btn-success btn-lg w-100"
-        :disabled="!selectedAddressId || isProcessing"
-        @click="placeOrder"
-      >
-        <span v-if="isProcessing" class="spinner-border spinner-border-sm me-2"></span>
+      <button class="btn-race mt-4 w-full py-3.5 text-base" :disabled="!selectedAddressId || isProcessing" @click="placeOrder">
+        <span v-if="isProcessing" class="h-4 w-4 animate-spin rounded-full border-2 border-asphalt border-t-transparent"></span>
         Buat Pesanan
       </button>
     </template>
@@ -129,7 +134,6 @@ const openAdd = () => {
 }
 
 const onAddressSaved = () => {
-  // Otomatis pilih alamat yang baru ditambahkan (paling atas di list setelah refetch)
   const latest = addressStore.addresses[0]
   if (latest) selectedAddressId.value = latest.id
 }

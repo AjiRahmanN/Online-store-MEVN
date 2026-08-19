@@ -1,71 +1,107 @@
 <template>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Navbar scroll</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarScroll">
-      <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
-        <li class="nav-item">
-          <router-link class="nav-link active" aria-current="page" :to="{name:'adminproducts'}">List Product</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link active" aria-current="page" to="">List User</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link active" aria-current="page" :to="{name:'TambahProduct'}">Add Product</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link active" aria-current="page" to="">Add User</router-link>
-        </li>
-        <li v-if="isAuthenticated" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{ user?.username }}
-          </a>
-          <ul class="dropdown-menu">
-            <li><router-link :to="{ name: 'user' }" class="nav-link dropdown-item">User Profile</router-link></li>
-            <li><a class="dropdown-item" href="#">Setings</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><button @click="logout" class="dropdown-item btn btn-danger">Logout</button></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+  <header class="sticky top-0 z-40 bg-asphalt">
+    <nav class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 lg:px-8">
+      <!-- Logo -->
+      <router-link :to="{ name: 'adminproducts' }" class="flex shrink-0 items-center gap-2.5">
+        <span class="corner-cut flex h-10 w-10 items-center justify-center bg-track-yellow font-display text-lg font-bold text-asphalt">
+          M4
+        </span>
+        <span class="font-display text-xl leading-none font-bold tracking-wide text-steel-white uppercase">
+          Mendo<span class="text-circuit-red">Racing</span>
+        </span>
+        <span class="corner-cut bg-circuit-red px-2 py-0.5 font-display text-[10px] font-bold tracking-widest text-steel-white uppercase">
+          Admin
+        </span>
+      </router-link>
+
+      <div class="ml-6 hidden items-center gap-1 lg:flex">
+        <router-link
+          :to="{ name: 'adminproducts' }"
+          class="corner-cut px-3 py-1.5 font-display text-sm font-semibold tracking-wide uppercase"
+          :class="isActive('adminproducts') ? 'bg-track-yellow text-asphalt' : 'text-chrome hover:text-track-yellow'"
+        >
+          Daftar Produk
+        </router-link>
+        <router-link
+          :to="{ name: 'TambahProduct' }"
+          class="corner-cut px-3 py-1.5 font-display text-sm font-semibold tracking-wide uppercase"
+          :class="isActive('TambahProduct') ? 'bg-track-yellow text-asphalt' : 'text-chrome hover:text-track-yellow'"
+        >
+          Tambah Produk
+        </router-link>
+      </div>
+
+      <div class="ml-auto flex items-center gap-2">
+        <div class="relative" ref="userWrapperRef">
+          <button
+            type="button"
+            class="flex h-10 items-center gap-2 corner-cut border border-white/10 bg-asphalt-light px-3 text-sm font-semibold text-steel-white hover:border-track-yellow"
+            @click="showUser = !showUser"
+          >
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-track-yellow text-xs font-bold text-asphalt">
+              {{ initials }}
+            </span>
+            <span class="hidden max-w-24 truncate lg:inline">{{ user?.username }}</span>
+          </button>
+
+          <div v-if="showUser" class="spec-card absolute right-0 z-20 mt-2 w-48 py-1">
+            <router-link
+              :to="{ name: 'user' }"
+              class="block px-4 py-2 text-sm font-medium hover:bg-track-yellow"
+              @click="showUser = false"
+            >
+              Profil Saya
+            </router-link>
+            <hr class="my-1 border-black/10" />
+            <button
+              class="block w-full px-4 py-2 text-left text-sm font-medium text-circuit-red hover:bg-circuit-red hover:text-steel-white"
+              @click="logout"
+            >
+              Keluar
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="curb-divider curb-divider--yellow"></div>
+  </header>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore} from '../stores/auth';
-import { useRouter } from 'vue-router';
-import { computed} from 'vue'
-const router = useRouter()
+import { useAuthStore } from '../stores/auth'
+import { useRouter, useRoute } from 'vue-router'
+import { onMounted, onBeforeUnmount, computed, ref } from 'vue'
 
+const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore() as any
 
-const user = computed(() =>{
-  return authStore.user
-}) 
+const user = computed(() => authStore.user)
+const initials = computed(() => (user.value?.username?.[0] || '?').toUpperCase())
 
-const isAuthenticated = computed(() =>{
-  return authStore.isAuthenticated
-}) 
+const showUser = ref(false)
+const userWrapperRef = ref<HTMLElement | null>(null)
+
+const isActive = (name: string) => route.name === name
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (userWrapperRef.value && !userWrapperRef.value.contains(e.target as Node)) {
+    showUser.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 async function logout() {
-  await authStore.logout()
-  .then((res: unknown) => {
-    console.log('Logged out successfully')
+  try {
+    showUser.value = false
+    await authStore.logout()
     router.replace({ name: 'login' })
-  })
-  .catch((error: unknown) => {
-    if (error && typeof error === 'object' && 'response' in error) {
-    throw (error as any)?.response?.data?.message || 'Unknown error'
+  } catch (error: any) {
+    console.error(error)
+    alert(error?.response?.data?.message || 'Unknown error')
   }
-  throw 'Unknown error'
-  })
 }
 </script>
-
-
-<style scoped>  </style>

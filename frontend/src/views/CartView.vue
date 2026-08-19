@@ -1,58 +1,51 @@
 <template>
-  <div class="container mt-4">
-    <h2 class="mb-3">🛒 Your Cart</h2>
+  <div class="mx-auto max-w-4xl px-4 py-10 lg:px-8">
+    <p class="race-mono text-xs font-bold tracking-widest text-circuit-red uppercase">// Garasi Belanja</p>
+    <h1 class="mb-6 font-display text-3xl font-bold tracking-wide text-steel-white uppercase">Keranjang</h1>
 
     <!-- Jika kosong -->
-    <div v-if="cartItems.length === 0" class="alert alert-info text-center">
-      Cart kamu masih kosong 😢
+    <div v-if="cartItems.length === 0" class="spec-card px-6 py-16 text-center">
+      <p class="font-display text-lg font-bold uppercase">Keranjang Masih Kosong</p>
+      <p class="mt-1 text-sm text-asphalt/60">Belum ada part yang kamu pilih.</p>
+      <router-link :to="{ name: 'home' }" class="btn-race mt-5 inline-flex px-5 py-2.5 text-sm">
+        Ke Katalog
+      </router-link>
     </div>
 
     <!-- Jika ada item -->
     <div v-else>
-      <div
-        v-for="item in cartItems"
-        :key="item.product.id"
-        class="card mb-3 p-3 shadow-sm cart-item"
-      >
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-          <div class="d-flex align-items-center">
-            <!-- Gambar Produk -->
+      <div v-for="item in cartItems" :key="item.product.id" class="spec-card mb-3 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-3">
             <img
-              :src="`${apiBaseUrl}${item.product.imageUrl || defaultImage}`"
+              :src="`${apiBaseUrl}${item.product.imageUrl || ''}`"
               alt="Product Image"
-              class="rounded me-3 cart-image"
+              class="h-16 w-16 shrink-0 rounded object-cover"
             />
-
-            <!-- Nama dan Harga -->
-            <div>
-              <h5 class="mb-1">{{ item.product.name }}</h5>
-              <p class="text-muted mb-0">Rp {{ item.product.price.toLocaleString() }}</p>
-              <small v-if="item.qty > item.product.stock" class="text-danger">
+            <div class="min-w-0">
+              <h5 class="truncate font-display text-sm font-bold">{{ item.product.name }}</h5>
+              <p class="race-mono text-sm text-asphalt/70">Rp {{ item.product.price.toLocaleString() }}</p>
+              <small v-if="item.qty > item.product.stock" class="text-circuit-red">
                 Stok tersisa hanya {{ item.product.stock }}
               </small>
             </div>
           </div>
 
-          <div class="d-flex align-items-center gap-3">
+          <div class="flex items-center gap-3">
             <!-- Kontrol Qty -->
-            <div class="input-group input-group-sm" style="width: 120px">
+            <div class="flex items-center border border-black/15">
               <button
-                class="btn btn-outline-secondary"
                 type="button"
+                class="h-8 w-8 font-bold text-asphalt hover:bg-asphalt/10 disabled:opacity-30"
                 :disabled="item.qty <= 1"
                 @click="changeQty(item, item.qty - 1)"
               >
                 −
               </button>
-              <input
-                type="text"
-                class="form-control text-center"
-                :value="item.qty"
-                readonly
-              />
+              <span class="race-mono w-8 text-center text-sm font-bold">{{ item.qty }}</span>
               <button
-                class="btn btn-outline-secondary"
                 type="button"
+                class="h-8 w-8 font-bold text-asphalt hover:bg-asphalt/10 disabled:opacity-30"
                 :disabled="item.qty >= item.product.stock"
                 @click="changeQty(item, item.qty + 1)"
               >
@@ -61,12 +54,16 @@
             </div>
 
             <!-- Subtotal -->
-            <div class="text-end" style="min-width: 110px">
+            <div class="race-mono w-28 text-right text-sm font-bold">
               Rp {{ (item.product.price * item.qty).toLocaleString() }}
             </div>
 
             <!-- Tombol Hapus -->
-            <button class="btn btn-danger btn-sm" @click="removeItem(item.product.id)">
+            <button
+              type="button"
+              class="corner-cut bg-circuit-red px-3 py-2 text-xs font-bold text-steel-white uppercase hover:bg-circuit-red-dark"
+              @click="removeItem(item.product.id)"
+            >
               Hapus
             </button>
           </div>
@@ -74,22 +71,19 @@
       </div>
 
       <!-- Total Harga -->
-      <div class="d-flex justify-content-between align-items-center mt-4">
-        <h4 class="mb-0">
-          Total: <span class="text-success">Rp {{ totalPrice.toLocaleString() }}</span>
-        </h4>
-        <button
-          class="btn btn-success btn-lg"
-          :disabled="hasStockIssue"
-          @click="goToCheckout"
-        >
+      <div class="spec-card mt-6 flex flex-wrap items-center justify-between gap-4 p-4">
+        <div>
+          <p class="text-xs font-semibold tracking-widest text-asphalt/50 uppercase">Total Belanja</p>
+          <p class="race-mono text-2xl font-bold text-circuit-red">Rp {{ totalPrice.toLocaleString() }}</p>
+        </div>
+        <button class="btn-race px-6 py-3" :disabled="hasStockIssue" @click="goToCheckout">
           Checkout
         </button>
       </div>
-      <p v-if="hasStockIssue" class="text-danger text-end mt-2">
+      <p v-if="hasStockIssue" class="mt-2 text-right text-sm text-circuit-red">
         Ada barang di cart yang melebihi stok tersedia. Kurangi jumlahnya untuk lanjut checkout.
       </p>
-      <p v-if="errorMessage" class="text-danger text-end mt-2">{{ errorMessage }}</p>
+      <p v-if="errorMessage" class="mt-2 text-right text-sm text-circuit-red">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
@@ -103,7 +97,6 @@ const cartStore = useCartStore()
 const router = useRouter()
 
 const apiBaseUrl = import.meta.env.VITE_API_URL
-const defaultImage = ref('https://via.placeholder.com/100?text=No+Image')
 const errorMessage = ref('')
 
 const cartItems = computed(() => cartStore.items)
@@ -133,20 +126,3 @@ onMounted(() => {
   cartStore.fetchCart()
 })
 </script>
-
-<style scoped>
-.cart-item {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cart-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.cart-image {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-}
-</style>

@@ -1,35 +1,90 @@
-@import './base.css';
+@import "tailwindcss";
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+@theme {
+  /* === Palet: bengkel & sirkuit === */
+  --color-asphalt: #14161c;
+  --color-asphalt-light: #1f222b;
+  --color-asphalt-lighter: #2a2e3a;
+  --color-track-yellow: #ffc53d;
+  --color-track-yellow-dark: #e6a824;
+  --color-circuit-red: #e23b33;
+  --color-circuit-red-dark: #c22d26;
+  --color-chrome: #c7ccd1;
+  --color-steel-white: #edeff2;
+  --color-turbo-cyan: #16c2d6;
+
+  /* === Tipografi === */
+  --font-display: "Rajdhani", "sans-serif";
+  --font-body: "Manrope", "sans-serif";
+  --font-race-mono: "JetBrains Mono", monospace;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
+@layer base {
   body {
-    display: flex;
-    place-items: center;
+    @apply bg-asphalt text-steel-white font-body antialiased;
   }
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+
+  /* Aksesibilitas: fokus keyboard tetap terlihat jelas */
+  :focus-visible {
+    outline: 2px solid var(--color-track-yellow);
+    outline-offset: 2px;
+  }
+}
+
+/* Ciri khas #2: sudut terpotong ala kartu pit-pass / tiket balap.
+   Didefinisikan via @utility (bukan class biasa) supaya bisa dipakai lewat @apply. */
+@utility corner-cut {
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+}
+@utility corner-cut-lg {
+  clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px);
+}
+
+@layer components {
+  /* Ciri khas #1: garis kerbstone/curb trek balap, dipakai sebagai pembatas antar-section */
+  .curb-divider {
+    height: 10px;
+    background-image: repeating-linear-gradient(-45deg, var(--color-circuit-red) 0 16px, var(--color-steel-white) 16px 32px);
+  }
+  .curb-divider--yellow {
+    background-image: repeating-linear-gradient(-45deg, var(--color-track-yellow-dark) 0 16px, var(--color-asphalt) 16px 32px);
+  }
+
+  /* Kartu spesifikasi (dipakai untuk product card, ringkasan, dll) */
+  .spec-card {
+    @apply corner-cut border border-black/10 bg-steel-white text-asphalt shadow-[5px_5px_0_0_rgba(20,22,28,1)];
+  }
+
+  /* Tombol utama gaya "pit-stop" */
+  .btn-race {
+    @apply corner-cut inline-flex items-center justify-center gap-2 bg-track-yellow px-5 py-2.5 font-display text-base font-bold tracking-wide text-asphalt uppercase shadow-[4px_4px_0_0_rgba(20,22,28,1)] transition-all hover:-translate-y-0.5 hover:bg-circuit-red hover:text-steel-white hover:shadow-[6px_6px_0_0_rgba(20,22,28,1)] active:translate-y-0 active:shadow-[2px_2px_0_0_rgba(20,22,28,1)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:bg-track-yellow disabled:hover:text-asphalt;
+  }
+
+  .btn-race-outline {
+    @apply corner-cut inline-flex items-center justify-center gap-2 border-2 border-track-yellow bg-transparent px-5 py-2.5 font-display text-base font-bold tracking-wide text-track-yellow uppercase transition-colors hover:bg-track-yellow hover:text-asphalt disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  /* Angka harga / spesifikasi bergaya digital lap-timer */
+  .race-mono {
+    @apply font-race-mono tracking-tight;
+  }
+
+  /* Pita label diagonal di pojok kartu (Baru / Diskon / Habis) */
+  .ribbon-badge {
+    @apply absolute top-3 -left-1 z-10 -rotate-3 bg-circuit-red px-3 py-0.5 font-display text-xs font-bold tracking-widest text-steel-white uppercase shadow-md;
+  }
+
+  /* Input form (dipakai di Login, Register, form Alamat) */
+  .field-race {
+    @apply w-full border border-asphalt/20 bg-white px-3 py-2 text-sm text-asphalt placeholder-asphalt/30 focus:border-circuit-red focus:outline-none;
   }
 }

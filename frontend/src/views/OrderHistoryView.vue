@@ -1,74 +1,81 @@
 <template>
-  <div class="container mt-4">
-    <h2 class="mb-3">📦 Pesanan Saya</h2>
+  <div class="mx-auto max-w-3xl px-4 py-10 lg:px-8">
+    <p class="race-mono text-xs font-bold tracking-widest text-circuit-red uppercase">// Riwayat Balapan</p>
+    <h1 class="mb-6 font-display text-3xl font-bold tracking-wide text-steel-white uppercase">Pesanan Saya</h1>
 
-    <div v-if="successOrderId" class="alert alert-success">
-      Pesanan <strong>{{ successOrderId }}</strong> berhasil dibuat. Status akan diperbarui otomatis setelah pembayaran dikonfirmasi.
+    <div v-if="successOrderId" class="mb-4 border-l-4 border-turbo-cyan bg-turbo-cyan/10 px-4 py-3 text-sm text-turbo-cyan">
+      Pesanan <strong class="race-mono">{{ successOrderId }}</strong> berhasil dibuat. Status akan diperbarui otomatis
+      setelah pembayaran dikonfirmasi.
     </div>
 
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary"></div>
+    <div v-if="loading" class="flex justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-track-yellow border-t-transparent"></div>
     </div>
 
-    <div v-else-if="orders.length === 0" class="alert alert-info text-center">
-      Kamu belum punya pesanan.
+    <div v-else-if="orders.length === 0" class="spec-card px-6 py-16 text-center">
+      <p class="font-display text-lg font-bold uppercase">Belum Ada Pesanan</p>
+      <p class="mt-1 text-sm text-asphalt/60">Yuk cari part buat mesin balapmu.</p>
+      <router-link :to="{ name: 'home' }" class="btn-race mt-5 inline-flex px-5 py-2.5 text-sm">
+        Ke Katalog
+      </router-link>
     </div>
 
-    <div v-else>
-      <div v-for="order in orders" :key="order.id" class="card mb-3 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-            <div>
-              <h6 class="mb-1">{{ order.orderId }}</h6>
-              <small class="text-muted">{{ formatDate(order.createdAt) }}</small>
-            </div>
-            <span class="badge" :class="statusBadgeClass(order.status)">
-              {{ statusLabel(order.status) }}
-            </span>
+    <div v-else class="space-y-4">
+      <div v-for="order in orders" :key="order.id" class="spec-card p-4">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <p class="race-mono text-sm font-bold">{{ order.orderId }}</p>
+            <p class="text-xs text-asphalt/50">{{ formatDate(order.createdAt) }}</p>
           </div>
+          <span
+            class="corner-cut px-2.5 py-1 font-display text-xs font-bold tracking-wide uppercase"
+            :class="statusBadgeClass(order.status)"
+          >
+            {{ statusLabel(order.status) }}
+          </span>
+        </div>
 
-          <hr />
-
-          <div v-if="order.shippingAddress" class="mb-2">
-            <small class="text-muted d-block mb-1">Dikirim ke:</small>
-            <div class="small">
-              <strong>{{ order.shippingAddress.recipientName }}</strong> — {{ order.shippingAddress.phone }}<br />
+        <div v-if="order.shippingAddress" class="mt-3 border-t border-black/10 pt-3">
+          <p class="mb-1 text-xs font-bold tracking-wide text-asphalt/50 uppercase">Dikirim ke</p>
+          <p class="text-sm">
+            <strong>{{ order.shippingAddress.recipientName }}</strong> — {{ order.shippingAddress.phone }}<br />
+            <span class="text-asphalt/70">
               {{ order.shippingAddress.fullAddress }}, {{ order.shippingAddress.city }},
               {{ order.shippingAddress.province }} {{ order.shippingAddress.postalCode }}
-            </div>
-          </div>
+            </span>
+          </p>
+        </div>
 
-          <hr />
-
-          <div v-for="item in order.items" :key="item.product" class="d-flex justify-content-between mb-1">
+        <div class="mt-3 space-y-1 border-t border-black/10 pt-3">
+          <div v-for="item in order.items" :key="item.product" class="flex justify-between text-sm">
             <span>{{ item.name }} × {{ item.qty }}</span>
-            <span>Rp {{ (item.price * item.qty).toLocaleString() }}</span>
+            <span class="race-mono">Rp {{ (item.price * item.qty).toLocaleString() }}</span>
           </div>
+        </div>
 
-          <hr />
+        <div class="mt-3 flex justify-between border-t border-black/10 pt-3 font-display font-bold uppercase">
+          <span>Total</span>
+          <span class="race-mono text-circuit-red">Rp {{ order.totalAmount.toLocaleString() }}</span>
+        </div>
 
-          <div class="d-flex justify-content-between fw-bold">
-            <span>Total</span>
-            <span>Rp {{ order.totalAmount.toLocaleString() }}</span>
-          </div>
-
-          <div v-if="order.status === 'pending'" class="d-flex gap-2 mt-3">
-            <button
-              class="btn btn-outline-primary btn-sm"
-              :disabled="processingOrderId === order.orderId"
-              @click="refreshStatus(order.orderId)"
-            >
-              Cek Status Pembayaran
-            </button>
-            <button
-              class="btn btn-outline-danger btn-sm"
-              :disabled="processingOrderId === order.orderId"
-              @click="cancelOrder(order.orderId)"
-            >
-              <span v-if="processingOrderId === order.orderId" class="spinner-border spinner-border-sm me-1"></span>
-              Batalkan Pesanan
-            </button>
-          </div>
+        <div v-if="order.status === 'pending'" class="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="corner-cut border-2 border-asphalt/20 px-3 py-1.5 text-xs font-bold tracking-wide uppercase hover:border-asphalt disabled:opacity-40"
+            :disabled="processingOrderId === order.orderId"
+            @click="refreshStatus(order.orderId)"
+          >
+            Cek Status Pembayaran
+          </button>
+          <button
+            type="button"
+            class="corner-cut border-2 border-circuit-red px-3 py-1.5 text-xs font-bold tracking-wide text-circuit-red uppercase hover:bg-circuit-red hover:text-steel-white disabled:opacity-40"
+            :disabled="processingOrderId === order.orderId"
+            @click="cancelOrder(order.orderId)"
+          >
+            <span v-if="processingOrderId === order.orderId" class="mr-1 inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+            Batalkan Pesanan
+          </button>
         </div>
       </div>
     </div>
@@ -101,13 +108,13 @@ const statusLabel = (status: string) => {
 
 const statusBadgeClass = (status: string) => {
   const map: Record<string, string> = {
-    pending: 'bg-warning text-dark',
-    paid: 'bg-success',
-    failed: 'bg-danger',
-    expired: 'bg-secondary',
-    cancelled: 'bg-secondary',
+    pending: 'bg-track-yellow text-asphalt',
+    paid: 'bg-turbo-cyan text-asphalt',
+    failed: 'bg-circuit-red text-steel-white',
+    expired: 'bg-chrome text-asphalt',
+    cancelled: 'bg-chrome text-asphalt',
   }
-  return map[status] || 'bg-secondary'
+  return map[status] || 'bg-chrome text-asphalt'
 }
 
 const formatDate = (dateStr: string) =>

@@ -1,61 +1,70 @@
 <template>
-  <div v-if="modelValue" class="address-modal-backdrop" @click.self="close">
-    <div class="address-modal-content card shadow">
-      <div class="card-body">
-        <h5 class="mb-3">{{ editing ? 'Edit Alamat' : 'Tambah Alamat Baru' }}</h5>
-        <form @submit.prevent="submit">
-          <div class="row g-2">
-            <div class="col-md-6">
-              <label class="form-label">Label Alamat</label>
-              <input v-model="form.label" type="text" class="form-control" placeholder="Rumah / Kantor" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Nama Penerima</label>
-              <input v-model="form.recipientName" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">No. HP</label>
-              <input v-model="form.phone" type="tel" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Kode Pos</label>
-              <input v-model="form.postalCode" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Kota/Kabupaten</label>
-              <input v-model="form.city" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Provinsi</label>
-              <input v-model="form.province" type="text" class="form-control" required />
-            </div>
-            <div class="col-12">
-              <label class="form-label">Alamat Lengkap</label>
-              <textarea
-                v-model="form.fullAddress"
-                class="form-control"
-                rows="3"
-                placeholder="Nama jalan, nomor rumah, RT/RW, kecamatan"
-                required
-              ></textarea>
-            </div>
-            <div class="col-12 form-check mt-2">
-              <input v-model="form.isDefault" type="checkbox" class="form-check-input" id="isDefaultCheck" />
-              <label class="form-check-label" for="isDefaultCheck">Jadikan alamat utama</label>
-            </div>
-          </div>
-
-          <p v-if="errorMessage" class="text-danger mt-3 mb-0">{{ errorMessage }}</p>
-
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="button" class="btn btn-outline-secondary" @click="close">Batal</button>
-            <button type="submit" class="btn btn-success" :disabled="isSaving">
-              <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-              Simpan
-            </button>
-          </div>
-        </form>
+  <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @click.self="close">
+    <div class="spec-card w-full max-w-lg max-h-[90vh] overflow-y-auto p-5">
+      <div class="mb-1 flex items-center justify-between">
+        <p class="race-mono text-xs font-bold tracking-widest text-circuit-red uppercase">// Data Pengiriman</p>
       </div>
+      <h5 class="mb-4 font-display text-xl font-bold uppercase">
+        {{ editing ? 'Edit Alamat' : 'Tambah Alamat Baru' }}
+      </h5>
+
+      <form @submit.prevent="submit">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label for="addr-label" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Label Alamat</label>
+            <input id="addr-label" v-model="form.label" name="label" type="text" placeholder="Rumah / Kantor" class="field-race" />
+          </div>
+          <div>
+            <label for="addr-recipient" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Nama Penerima</label>
+            <input id="addr-recipient" v-model="form.recipientName" name="recipientName" type="text" autocomplete="name" class="field-race" required />
+          </div>
+          <div>
+            <label for="addr-phone" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">No. HP</label>
+            <input id="addr-phone" v-model="form.phone" name="phone" type="tel" autocomplete="tel" class="field-race" required />
+          </div>
+          <div>
+            <label for="addr-postal" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Kode Pos</label>
+            <input id="addr-postal" v-model="form.postalCode" name="postalCode" type="text" autocomplete="postal-code" class="field-race" required />
+          </div>
+          <div>
+            <label for="addr-city" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Kota/Kabupaten</label>
+            <input id="addr-city" v-model="form.city" name="city" type="text" autocomplete="address-level2" class="field-race" required />
+          </div>
+          <div>
+            <label for="addr-province" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Provinsi</label>
+            <input id="addr-province" v-model="form.province" name="province" type="text" autocomplete="address-level1" class="field-race" required />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="addr-full" class="mb-1 block text-xs font-bold tracking-wide text-asphalt/60 uppercase">Alamat Lengkap</label>
+            <textarea
+              id="addr-full"
+              v-model="form.fullAddress"
+              name="fullAddress"
+              autocomplete="street-address"
+              rows="3"
+              placeholder="Nama jalan, nomor rumah, RT/RW, kecamatan"
+              class="field resize-none"
+              required
+            ></textarea>
+          </div>
+          <label for="addr-default" class="mt-1 flex items-center gap-2 sm:col-span-2">
+            <input id="addr-default" v-model="form.isDefault" name="isDefault" type="checkbox" class="h-4 w-4 accent-circuit-red" />
+            <span class="text-sm font-medium">Jadikan alamat utama</span>
+          </label>
+        </div>
+
+        <p v-if="errorMessage" class="mt-3 text-sm text-circuit-red">{{ errorMessage }}</p>
+
+        <div class="mt-5 flex justify-end gap-2">
+          <button type="button" class="corner-cut border border-asphalt/20 px-4 py-2 text-sm font-bold uppercase hover:bg-asphalt/5" @click="close">
+            Batal
+          </button>
+          <button type="submit" class="btn-race px-5 py-2 text-sm" :disabled="isSaving">
+            <span v-if="isSaving" class="h-4 w-4 animate-spin rounded-full border-2 border-asphalt border-t-transparent"></span>
+            Simpan
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -133,23 +142,3 @@ const submit = async () => {
   }
 }
 </script>
-
-<style scoped>
-.address-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-  padding: 1rem;
-}
-
-.address-modal-content {
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-</style>

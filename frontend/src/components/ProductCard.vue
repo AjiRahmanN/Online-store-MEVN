@@ -1,18 +1,80 @@
 <template>
-  <div class="product-container">
-      <div v-for="(p) in products" :key="p.id" class="card">
-          <router-link
-                :to="{ name: 'product-detail', params: { id: p.id } }"
-                class="card-link"
-              >
-          <img :src="`http://localhost:3500${p.imageUrl}`" class="card-img-top" alt="Product Image" />
-          <div class="card-body">
-              <h5 class="card-title">{{ p.name }}</h5>
-              <p class="card-text">{{ truncate(p.description, 80) }}</p>
-              <button class="btn btn-primary" @click="addToCart(p.id)">Add to Cart</button>
-            </div>
+  <div>
+    <!-- Loading skeleton -->
+    <div v-if="loading" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div v-for="n in 8" :key="n" class="corner-cut h-64 animate-pulse bg-asphalt-light"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div
+      v-else-if="products.length === 0"
+      class="spec-card flex flex-col items-center gap-2 px-6 py-16 text-center"
+    >
+      <p class="font-display text-lg font-bold uppercase">Garasi Masih Kosong</p>
+      <p class="text-sm text-asphalt/60">Belum ada produk yang tersedia saat ini. Cek lagi nanti ya.</p>
+    </div>
+
+    <template v-else>
+      <!-- Filter kategori (dinamis dari data produk) -->
+      <div v-if="categories.length > 1" class="mb-6 flex flex-wrap gap-2">
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          type="button"
+          class="corner-cut border px-3 py-1.5 font-display text-xs font-bold tracking-wide uppercase transition-colors"
+          :class="
+            activeCategory === cat
+              ? 'border-track-yellow bg-track-yellow text-asphalt'
+              : 'border-white/15 bg-asphalt-light text-chrome hover:border-track-yellow hover:text-track-yellow'
+          "
+          @click="activeCategory = cat"
+        >
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Grid produk -->
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <router-link
+          v-for="p in filteredProducts"
+          :key="p.id"
+          :to="{ name: 'product-detail', params: { id: p.id } }"
+          class="spec-card group relative flex flex-col overflow-hidden"
+        >
+          <span v-if="!p.stock" class="ribbon-badge">Habis</span>
+          <span v-else-if="p.stock <= 5" class="ribbon-badge bg-turbo-cyan text-asphalt">Sisa {{ p.stock }}</span>
+
+          <div class="aspect-square w-full overflow-hidden bg-asphalt-lighter">
+            <img
+              :src="`${apiBaseUrl}${p.imageUrl}`"
+              :alt="p.name"
+              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+
+          <div class="flex flex-1 flex-col gap-1 p-3">
+            <span v-if="p.category" class="race-mono text-[10px] font-bold tracking-widest text-circuit-red uppercase">
+              {{ p.category }}
+            </span>
+            <h3 class="line-clamp-2 font-display text-sm leading-tight font-bold text-asphalt">
+              {{ p.name }}
+            </h3>
+            <p class="race-mono mt-auto pt-2 text-base font-bold text-asphalt">
+              Rp {{ p.price?.toLocaleString() }}
+            </p>
+
+            <button
+              type="button"
+              class="btn-race mt-2 w-full py-2 text-xs"
+              :disabled="!p.stock"
+              @click.prevent.stop="addToCart(p)"
+            >
+              {{ p.stock ? '+ Keranjang' : 'Stok Habis' }}
+            </button>
+          </div>
         </router-link>
-        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -25,21 +87,28 @@ const productStore = useProductStore() as any
 const cartStore = useCartStore() as any
 const loading = ref(true)
 const products = computed(() => productStore.products)
+const apiBaseUrl = import.meta.env.VITE_API_URL
 
-// Fungsi potong teks deskripsi
-const truncate = (text: string, length: number) => {
-  if (!text) return ''
-  return text.length > length ? text.substring(0, length) + '...' : text
-}
+const activeCategory = ref<string>('Semua')
+const categories = computed<string[]>(() => {
+  const unique = Array.from(
+    new Set(
+      (products.value as any[]).map((p) => p.category as string).filter(Boolean),
+    ),
+  ) as string[]
+  return unique.length ? ['Semua', ...unique] : []
+})
+const filteredProducts = computed(() => {
+  if (activeCategory.value === 'Semua') return products.value
+  return products.value.filter((p: any) => p.category === activeCategory.value)
+})
 
-// Fungsi tambah ke keranjang
-const addToCart = ( product: any) => {
+const addToCart = async (product: any) => {
   try {
-    cartStore.addToCart(product)
-    alert(`${product.name} berhasil ditambahkan ke keranjang!`)
+    await cartStore.addToCart(product.id)
   } catch (err: any) {
     console.error('Gagal menambah ke keranjang:', err)
-    alert('Terjadi kesalahan saat menambahkan ke keranjang.')
+    alert(typeof err === 'string' ? err : 'Terjadi kesalahan saat menambahkan ke keranjang.')
   }
 }
 
@@ -48,63 +117,8 @@ onMounted(async () => {
     await productStore.fetchAll()
   } catch (err: any) {
     console.error('Error fetching products:', err)
-    alert('Gagal memuat produk: ' + err)
   } finally {
     loading.value = false
   }
 })
 </script>
-
-<style scoped>
-/* 🔹 Kontainer flex agar produk berjejer ke samping */
-.product-container {
-  display: flex;
-  flex-wrap: wrap; /* Supaya otomatis turun ke bawah kalau penuh */
-  justify-content: flex-start;
-  gap: 20px; /* Jarak antar kartu */
-  padding: 20px;
-}
-
-/* 🔹 Styling kartu produk */
-.card {
-  width: 18rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-/* 🔹 Gambar produk */
-.card-img-top {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-/* 🔹 Konten dalam kartu */
-.card-body {
-  padding: 15px;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.card-text {
-  font-size: 0.9rem;
-  color: #555;
-  min-height: 50px;
-  margin-bottom: 10px;
-}
-
-/* 🔹 Tombol */
-.btn {
-  width: 100%;
-}
-</style>
