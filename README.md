@@ -21,6 +21,7 @@ Aplikasi e-commerce full-stack yang dibangun dengan **MongoDB, Express, Vue 3, d
 ## 🧱 Tech Stack
 
 **Backend**
+
 - Node.js + Express 5
 - MongoDB + Mongoose
 - JWT (`jsonwebtoken`) untuk autentikasi
@@ -29,6 +30,7 @@ Aplikasi e-commerce full-stack yang dibangun dengan **MongoDB, Express, Vue 3, d
 - `midtrans-client` untuk integrasi pembayaran
 
 **Frontend**
+
 - Vue 3 (`<script setup>`) + TypeScript
 - Vite
 - Pinia + `pinia-plugin-persistedstate`
@@ -111,8 +113,8 @@ ecomeers_mevn/
 ### 1. Clone repository
 
 ```bash
-git clone <url-repo-ini>
-cd ecomeers_mevn
+git clone https://github.com/AjiRahmanN/Online-store-MEVN.git
+cd Online-store-MEVN
 ```
 
 ### 2. Setup Backend
@@ -173,12 +175,12 @@ Aplikasi akan berjalan di `http://localhost:5173` (default Vite).
 
 Saat checkout, popup Midtrans Snap akan muncul. Gunakan kartu simulasi berikut untuk metode **kartu kredit**:
 
-| Field | Nilai |
-|---|---|
-| Nomor Kartu | `4811 1111 1111 1114` |
-| CVV | `123` |
-| Expiry | tanggal bebas di masa depan, misal `01/27` |
-| OTP (jika diminta) | `112233` |
+| Field              | Nilai                                      |
+| ------------------ | ------------------------------------------ |
+| Nomor Kartu        | `4811 1111 1111 1114`                      |
+| CVV                | `123`                                      |
+| Expiry             | tanggal bebas di masa depan, misal `01/27` |
+| OTP (jika diminta) | `112233`                                   |
 
 Metode lain (GoPay, QRIS, dll.) di sandbox biasanya punya tombol simulasi "Bayar" langsung di popup, tanpa OTP.
 
